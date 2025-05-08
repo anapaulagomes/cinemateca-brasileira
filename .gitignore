@@ -175,3 +175,5 @@ cython_debug/
 
 *.html
 *.pdf
+*.csv
+*.json
