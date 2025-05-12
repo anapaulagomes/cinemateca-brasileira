@@ -51,9 +51,6 @@ class FilmografiaSpider(scrapy.Spider):
 
     def parse_results(self, response):
         for td in response.xpath('//table//tr/td[2][.//b[@class="title"]]'):
-            if "BANANA DA TERRA" in td.xpath('.//b[@class="title"]/text()').get():
-                breakpoint()
-
             yield {
                 'titulo': td.xpath('.//b[@class="title"]/text()').get(),
                 'codigo_do_filme': td.xpath('.//b[contains(text(),"Código do Filme")]/following::blockquote[1]/text()').get(),
@@ -98,28 +95,29 @@ class FilmografiaSpider(scrapy.Spider):
         with_link = td.xpath(f'.//b[contains(text(), "{left_label}")]/following-sibling::a[count(preceding-sibling::b[contains(text(), "{right_label}")]) = 0]/text()').getall()
         return text_only + with_link
 
-    def parse_songs(self, response):
+    def parse_songs(self, td):
         songs = []
-        # Find all song title elements
-        song_titles = response.xpath('.//b[text()="Título: "]/following-sibling::text()')
 
-        for i, title_element in enumerate(song_titles):
-            # For each song title, find the related information
-            title = title_element.get().strip('; ')
+        labels = td.xpath(
+            './/b[contains(text(), "Canção")]/following-sibling::b/text()[count(preceding-sibling::b[contains(text(), "Identidades/elenco:")]) = 0]').getall()
+        values = td.xpath('.//b[contains(text(), "Canção")]/following-sibling::text()[count(preceding-sibling::b[contains(text(), "Identidades/elenco:")]) = 0]').getall()
 
-            # Get corresponding author and interpreter elements
-            author = response.xpath(f'(//b[text()="Autor da canção: "])[{i + 1}]/following-sibling::text()').get()
-            interpreter = response.xpath(f'(//b[text()="Intérprete: "])[{i + 1}]/following-sibling::text()').get()
+        names = {
+            "Título:": "titulo",
+            "Autor da canção:": "autor",
+            "Intérprete:": "interprete",
+            "Componentes:": "componentes",
+        }
 
-            # For some songs, there might be components information
-            components = response.xpath(f'(//b[text()="Componentes: "])[{i + 1}]/following-sibling::text()').get()
+        tmp = {}
+        for label, value in zip(labels, values):
+            label = label.strip()
+            label = names.get(label, label)
+            if label == "titulo" and tmp.get("titulo"):
+                songs.append(tmp)
+                tmp = {}
 
-            song = {
-                'title': title,
-                'author': author.strip('; ') if author else None,
-                'interpreter': interpreter.strip('; ') if interpreter else None,
-                'components': components.strip('; ') if components else None
-            }
-            songs.append(song)
+            value = value.strip("; ").strip()
+            tmp[label] = value
 
         return songs
