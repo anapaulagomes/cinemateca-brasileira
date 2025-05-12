@@ -8,8 +8,7 @@ class FilmografiaSpider(scrapy.Spider):
         "https://bases.cinemateca.org.br/cgi-bin/wxis.exe/iah/?IsisScript=iah/iah.xis&base=FILMOGRAFIA&lang=p"
     ]
 
-    def parse(self, response):
-        # simulate the form submission when clicking the search button
+    def form_request_factory(self, page=1):
         form_data = {
             "IsisScript": "iah/iah.xis",
             "environment": "^d/iah/^cf:/web/cinemateca/www/wwwroot/cinemateca/cgi-bin/iah/^bf:/web/cinemateca/www/wwwroot/cinemateca/bases/iah/^siah/iah.xis^v2.5.2",
@@ -38,19 +37,26 @@ class FilmografiaSpider(scrapy.Spider):
             "nextAction": "search",
             "base": "FILMOGRAFIA",
             "exprSearch": "",
-            "x": "39",
-            "y": "11",
+            f"Page{page}.x" if page > 1 else "x": "39",
+            f"Page{page}.y" if page > 1 else "y": "13",
             "conectSearch": "and",
         }
 
-        yield scrapy.FormRequest(
+        return scrapy.FormRequest(
             url="https://bases.cinemateca.org.br/cgi-bin/wxis.exe/iah/",
             formdata=form_data,
             callback=self.parse_results,
         )
 
+
+    def parse(self, response):
+        # simulate the form submission when clicking the search button
+        yield self.form_request_factory()
+
     def parse_results(self, response):
+
         for td in response.xpath('//table//tr/td[2][.//b[@class="title"]]'):
+            # TODO add created_at, url, and page
             yield {
                 'titulo': td.xpath('.//b[@class="title"]/text()').get(),
                 'codigo_do_filme': td.xpath('.//b[contains(text(),"Código do Filme")]/following::blockquote[1]/text()').get(),
@@ -88,7 +94,12 @@ class FilmografiaSpider(scrapy.Spider):
                 'cancoes': self.parse_songs(td)
             }
 
-    # TODO pagination
+        pages = response.css("table tr td font sup b i ::text").re(r"página (\d+) de (\d+)")
+        current_page = int(pages[0])
+        total_pages = int(pages[1])
+        if current_page < total_pages:
+            next_page = current_page + 1
+            yield self.form_request_factory(next_page)
 
     def get_sources(self, td, left_label, right_label):
         text_only = td.xpath(f'.//b[contains(text(), "{left_label}")]/following-sibling::text()[count(preceding-sibling::b[contains(text(), "{right_label}")]) = 0]').getall()
