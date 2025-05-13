@@ -4,8 +4,8 @@ import scrapy
 
 
 class FilmografiaSpider(scrapy.Spider):
-    name = 'filmografia'
-    allowed_domains = ['cinemateca.org.br']
+    name = "filmografia"
+    allowed_domains = ["cinemateca.org.br"]
     start_urls = [
         "https://bases.cinemateca.org.br/cgi-bin/wxis.exe/iah/?IsisScript=iah/iah.xis&base=FILMOGRAFIA&lang=p"
     ]
@@ -50,13 +50,14 @@ class FilmografiaSpider(scrapy.Spider):
             callback=self.parse_results,
         )
 
-
     def parse(self, response):
         # simulate the form submission when clicking the search button
         yield self.form_request_factory()
 
     def parse_results(self, response):
-        pages = response.css("table tr td font sup b i ::text").re(r"página (\d+) de (\d+)")
+        pages = response.css("table tr td font sup b i ::text").re(
+            r"página (\d+) de (\d+)"
+        )
         current_page = int(pages[0])
         total_pages = int(pages[1])
 
@@ -65,57 +66,106 @@ class FilmografiaSpider(scrapy.Spider):
                 "created_at": str(datetime.now()),
                 "url": response.url,
                 "page": current_page,
-                'titulo': td.xpath('.//b[@class="title"]/text()').get(),
-                'codigo_do_filme': td.xpath('.//b[contains(text(),"Código do Filme")]/following::blockquote[1]/text()').get(),
-                'categorias': td.xpath('.//b[text()="Categorias"]/following-sibling::text()').get(),
-                'material_original': td.xpath('.//b[text()="Material original"]/following-sibling::text()').get(),
-                'ano_de_producao': td.xpath('.//b[text()="Ano:"]/following-sibling::text()').get(),  # TODO .strip() etc
-                'pais_da_producao': td.xpath('.//b[text()="País: "]/following-sibling::text()').get(),  # TODO .strip() etc
-                'cidade_da_producao': td.xpath('.//b[text()="Cidade:"]/following-sibling::text()').get(),  # TODO .strip() etc
-                'estado_da_producao': td.xpath('.//b[text()="Estado:"]/following-sibling::text()').get(),  # TODO .strip() etc
-                'certificados': td.xpath(f'.//b[text()="Certificados"]/following-sibling::blockquote[1]/text()').get(),  # TODO .strip() etc
-                'data_do_lancamento': td.xpath('.//b[text()="Data:"]/following-sibling::text()').get(),
-                'local_do_lancamento': td.xpath('.//b[text()="Local:"]/following-sibling::text()').get(),
-                'sala_do_lancamento': td.xpath('.//b[text()="Sala(s):"]/following-sibling::text()').get(),
-                'circuito_exibidor': td.xpath('.//b[text()="Circuito exibidor"]/following-sibling::blockquote[1]/text()').get(),
-                'sinopse': td.xpath('.//b[text()="Sinopse"]/following-sibling::blockquote[1]/text()').get(),
-                'genero': td.xpath('.//b[text()="Gênero"]/following-sibling::blockquote[1]/text()').get(),
-                'termos_descritores': td.xpath('.//b[text()="Termos descritores"]/following-sibling::blockquote[1]/text()').get(),
-                'companhia_produtora': td.xpath('.//b[text()="Companhia(s) produtora(s): "]/following-sibling::text()').get(),
-                'producao': td.xpath('.//b[text()="Produção: "]/following-sibling::text()').get(),
-                'companhia_distribuidora': td.xpath('.//b[text()="Companhia(s) distribuidora(s): "]/following-sibling::text()').get(),  # the space here matters
-                'argumento': td.xpath('.//b[text()="Argumento: "]/following-sibling::text()').get(),  # the space here matters
-                'roteiro': td.xpath('.//b[text()="Roteiro: "]/following-sibling::text()').get(),  # the space here matters
-                'dialogos': td.xpath('.//b[text()="Diálogos: "]/following-sibling::text()').get(),  # the space here matters
-                'estoria': td.xpath('.//b[text()="Estória: "]/following-sibling::text()').get(),  # the space here matters
-                'direcao': td.xpath('.//b[text()="Direção: "]/following-sibling::text()').get(),  # the space here matters
-                'direcao_de_fotografia': td.xpath('.//b[text()="Direção: "]/following-sibling::text()').get(),  # FIXME
-                'camera': td.xpath('.//b[text()="Câmera: "]/following-sibling::text()').get(),  # the space here matters
-                'direcao_de_som': td.xpath('.//b[text()="Direção de som: "]/following-sibling::text()').get(),  # the space here matters
-                'cenografia': td.xpath('.//b[text()="Direção de som: "]/following-sibling::text()').get(),  # FIXME the space here matters
-                'identidades_elenco': td.xpath('.//b[text()="Identidades/elenco: "]/following-sibling::text()').getall(),
-                'conteudo_examinado': td.xpath('.//b[text()="Conteúdo examinado:  "]/following-sibling::text()').get(),
-                'fontes_utilizadas': td.xpath('.//b[contains(text(), "Fontes utilizadas:")]/following-sibling::a[count(preceding-sibling::b[contains(text(), "Fontes consultadas:")]) = 0]/text()').getall(),
-                'fontes_consultadas': self.get_sources(td, "Fontes consultadas:", "Observações:"),
-                'observacoes': td.xpath('.//b[text()="Observações: "]/following-sibling::text()').getall(),  # TODO to text
-                'cancoes': self.parse_songs(td)
+                "titulo": td.xpath('.//b[@class="title"]/text()').get(),
+                "codigo_do_filme": td.xpath(
+                    './/b[contains(text(),"Código do Filme")]/following::blockquote[1]/text()'
+                ).get(),
+                "categorias": self.get_text_next_to(td, "Categorias"),
+                "material_original": self.get_text_next_to(td, "Material original"),
+                "ano_de_producao": self.get_text_next_to(td, "Ano:"),
+                "pais_da_producao": self.get_text_next_to(td, "País: "),
+                "cidade_da_producao": self.get_text_next_to(td, "Cidade:"),
+                "estado_da_producao": self.get_text_next_to(td, "Estado:"),
+                "certificados": self.get_text_next_to_blockquote(td, "Certificados"),
+                "data_do_lancamento": self.get_text_next_to(td, "Data:"),
+                "local_do_lancamento": self.get_text_next_to(td, "Local:"),
+                "sala_do_lancamento": self.get_text_next_to(td, "Sala(s):"),
+                "circuito_exibidor": self.get_text_next_to_blockquote(
+                    td, "Circuito exibidor"
+                ),
+                "sinopse": self.get_text_next_to_blockquote(td, "Sinopse"),
+                "genero": self.get_text_next_to_blockquote(td, "Gênero"),
+                "termos_descritores": self.get_text_next_to_blockquote(
+                    td, "Termos descritores"
+                ),
+                "companhia_produtora": self.get_text_next_to(
+                    td, "Companhia(s) produtora(s): "
+                ),
+                "producao": self.get_text_next_to(td, "Produção: "),
+                "companhia_distribuidora": self.get_text_next_to(
+                    td, "Companhia(s) distribuidora(s): "
+                ),
+                "argumento": self.get_text_next_to(td, "Argumento: "),
+                "roteiro": self.get_text_next_to(td, "Roteiro: "),
+                "dialogos": self.get_text_next_to(td, "Diálogos: "),
+                "estoria": self.get_text_next_to(td, "Estória: "),
+                "direcao": self.get_text_next_to(td, "Direção: "),
+                "direcao_de_fotografia": self.get_text_next_to(
+                    td, "Direção de fotografia: "
+                ),
+                "camera": self.get_text_next_to(td, "Câmera: "),
+                "direcao_de_som": self.get_text_next_to(td, "Direção de som: "),
+                "cenografia": self.get_text_next_to(td, "Cenografia: "),
+                "identidades_elenco": self.get_text_next_to(
+                    td, "Identidades/elenco: ", return_all=True
+                ),
+                "conteudo_examinado": self.get_text_next_to(td, "Conteúdo examinado: "),
+                "fontes_utilizadas": td.xpath(
+                    './/b[contains(text(), "Fontes utilizadas:")]/following-sibling::a[count(preceding-sibling::b[contains(text(), "Fontes consultadas:")]) = 0]/text()'
+                ).getall(),
+                "fontes_consultadas": self.get_sources(
+                    td, "Fontes consultadas:", "Observações:"
+                ),
+                "observacoes": self.get_text_next_to(
+                    td, "Observações: ", return_all=True
+                ),
+                "cancoes": self.parse_songs(td),
             }
 
         if current_page < total_pages:
             next_page = current_page + 1
             yield self.form_request_factory(next_page)
 
+    def get_text_next_to_blockquote(self, td, label):
+        result = td.xpath(
+            f'.//b[text()="{label}"]/following-sibling::blockquote[1]/text()'
+        ).get()
+        return self.clean_text(result)
+
+    def get_text_next_to(self, td, label, return_all=False):
+        result = td.xpath(f'.//b[text()="{label}"]/following-sibling::text()')
+
+        if not return_all:
+            result = result.get()
+            return self.clean_text(result)
+
+        results = result.getall()
+        return "\n".join([self.clean_text(result) for result in results])
+
+    @staticmethod
+    def clean_text(text):
+        if not text:
+            return text
+        return text.strip("; ").strip()
+
     def get_sources(self, td, left_label, right_label):
-        text_only = td.xpath(f'.//b[contains(text(), "{left_label}")]/following-sibling::text()[count(preceding-sibling::b[contains(text(), "{right_label}")]) = 0]').getall()
-        with_link = td.xpath(f'.//b[contains(text(), "{left_label}")]/following-sibling::a[count(preceding-sibling::b[contains(text(), "{right_label}")]) = 0]/text()').getall()
+        text_only = td.xpath(
+            f'.//b[contains(text(), "{left_label}")]/following-sibling::text()[count(preceding-sibling::b[contains(text(), "{right_label}")]) = 0]'
+        ).getall()
+        with_link = td.xpath(
+            f'.//b[contains(text(), "{left_label}")]/following-sibling::a[count(preceding-sibling::b[contains(text(), "{right_label}")]) = 0]/text()'
+        ).getall()
         return text_only + with_link
 
     def parse_songs(self, td):
         songs = []
 
         labels = td.xpath(
-            './/b[contains(text(), "Canção")]/following-sibling::b/text()[count(preceding-sibling::b[contains(text(), "Identidades/elenco:")]) = 0]').getall()
-        values = td.xpath('.//b[contains(text(), "Canção")]/following-sibling::text()[count(preceding-sibling::b[contains(text(), "Identidades/elenco:")]) = 0]').getall()
+            './/b[contains(text(), "Canção")]/following-sibling::b/text()[count(preceding-sibling::b[contains(text(), "Identidades/elenco:")]) = 0]'
+        ).getall()
+        values = td.xpath(
+            './/b[contains(text(), "Canção")]/following-sibling::text()[count(preceding-sibling::b[contains(text(), "Identidades/elenco:")]) = 0]'
+        ).getall()
 
         names = {
             "Título:": "titulo",
