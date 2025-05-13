@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import scrapy
 
 
@@ -54,10 +56,15 @@ class FilmografiaSpider(scrapy.Spider):
         yield self.form_request_factory()
 
     def parse_results(self, response):
+        pages = response.css("table tr td font sup b i ::text").re(r"página (\d+) de (\d+)")
+        current_page = int(pages[0])
+        total_pages = int(pages[1])
 
         for td in response.xpath('//table//tr/td[2][.//b[@class="title"]]'):
-            # TODO add created_at, url, and page
             yield {
+                "created_at": str(datetime.now()),
+                "url": response.url,
+                "page": current_page,
                 'titulo': td.xpath('.//b[@class="title"]/text()').get(),
                 'codigo_do_filme': td.xpath('.//b[contains(text(),"Código do Filme")]/following::blockquote[1]/text()').get(),
                 'categorias': td.xpath('.//b[text()="Categorias"]/following-sibling::text()').get(),
@@ -94,9 +101,6 @@ class FilmografiaSpider(scrapy.Spider):
                 'cancoes': self.parse_songs(td)
             }
 
-        pages = response.css("table tr td font sup b i ::text").re(r"página (\d+) de (\d+)")
-        current_page = int(pages[0])
-        total_pages = int(pages[1])
         if current_page < total_pages:
             next_page = current_page + 1
             yield self.form_request_factory(next_page)
