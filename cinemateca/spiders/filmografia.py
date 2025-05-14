@@ -58,6 +58,8 @@ class FilmografiaSpider(scrapy.Spider):
         pages = response.css("table tr td font sup b i ::text").re(
             r"página (\d+) de (\d+)"
         )
+        if not pages:
+            return
         current_page = int(pages[0])
         total_pages = int(pages[1])
 
@@ -122,7 +124,7 @@ class FilmografiaSpider(scrapy.Spider):
                 "cancoes": self.parse_songs(td),
             }
 
-        if current_page < total_pages:
+        if current_page <= total_pages:
             next_page = current_page + 1
             yield self.form_request_factory(next_page)
 
