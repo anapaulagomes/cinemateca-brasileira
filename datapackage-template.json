@@ -1,178 +1,163 @@
 {
   "name": "filmografia",
   "title": "Filmografia da Cinemateca Brasileira",
-  "description": "Dados extraídos da base de filmografia da Cinemateca Brasileira via scrapper.",
-  "profile": "data-package",
-  "resources": [
-    {
-      "name": "filmografia",
-      "path": "filmografia.json",
-      "format": "json",
-      "schema": {
-        "fields": [
-          {
-            "name": "created_at",
-            "type": "datetime",
-            "format": "any"
-          },
-          {
-            "name": "url",
-            "type": "string"
-          },
-          {
-            "name": "page",
-            "type": "integer"
-          },
-          {
-            "name": "titulo",
-            "type": "string"
-          },
-          {
-            "name": "codigo_do_filme",
-            "type": "string"
-          },
-          {
-            "name": "categorias",
-            "type": "string"
-          },
-          {
-            "name": "material_original",
-            "type": "string"
-          },
-          {
-            "name": "ano_de_producao",
-            "type": "string"
-          },
-          {
-            "name": "pais_da_producao",
-            "type": "string"
-          },
-          {
-            "name": "cidade_da_producao",
-            "type": "string"
-          },
-          {
-            "name": "estado_da_producao",
-            "type": "string"
-          },
-          {
-            "name": "certificados",
-            "type": "string"
-          },
-          {
-            "name": "data_do_lancamento",
-            "type": "date",
-            "format": "any"
-          },
-          {
-            "name": "local_do_lancamento",
-            "type": "string"
-          },
-          {
-            "name": "sala_do_lancamento",
-            "type": "string"
-          },
-          {
-            "name": "circuito_exibidor",
-            "type": "string"
-          },
-          {
-            "name": "sinopse",
-            "type": "string"
-          },
-          {
-            "name": "genero",
-            "type": "string"
-          },
-          {
-            "name": "termos_descritores",
-            "type": "string"
-          },
-          {
-            "name": "companhia_produtora",
-            "type": "string"
-          },
-          {
-            "name": "producao",
-            "type": "string"
-          },
-          {
-            "name": "companhia_distribuidora",
-            "type": "string"
-          },
-          {
-            "name": "argumento",
-            "type": "string"
-          },
-          {
-            "name": "roteiro",
-            "type": "string"
-          },
-          {
-            "name": "dialogos",
-            "type": "string"
-          },
-          {
-            "name": "estoria",
-            "type": "string"
-          },
-          {
-            "name": "direcao",
-            "type": "string"
-          },
-          {
-            "name": "direcao_de_fotografia",
-            "type": ["string", "null"]
-          },
-          {
-            "name": "camera",
-            "type": "string"
-          },
-          {
-            "name": "direcao_de_som",
-            "type": "string"
-          },
-          {
-            "name": "cenografia",
-            "type": ["string", "null"]
-          },
-          {
-            "name": "identidades_elenco",
-            "type": ["string", "null"]
-          },
-          {
-            "name": "conteudo_examinado",
-            "type": ["string", "null"]
-          },
-          {
-            "name": "fontes_utilizadas",
-            "type": "array",
-            "items": {"type": "string"}
-          },
-          {
-            "name": "fontes_consultadas",
-            "type": "array",
-            "items": {"type": "string"}
-          },
-          {
-            "name": "observacoes",
-            "type": ["string", "null"]
-          },
-          {
-            "name": "cancoes",
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "titulo": {"type": "string"},
-                "autor": {"type": "string"},
-                "interprete": {"type": "string"},
-                "componentes": {"type": "string"}
-              }
-            }
-          }
-        ]
+  "description": "Dados extraídos da base de filmografia da Cinemateca Brasileira via scrapper (coletada em 13/05/2025).",
+  "type": "table",
+  "path": "filmografia-15052025.csv",
+  "scheme": "file",
+  "format": "csv",
+  "mediatype": "text/csv",
+  "encoding": "utf-8",
+  "schema": {
+    "fields": [
+      {
+        "name": "created_at",
+        "type": "datetime"
+      },
+      {
+        "name": "url",
+        "type": "string"
+      },
+      {
+        "name": "page",
+        "type": "integer"
+      },
+      {
+        "name": "titulo",
+        "type": "string"
+      },
+      {
+        "name": "codigo_do_filme",
+        "type": "string"
+      },
+      {
+        "name": "categorias",
+        "type": "string"
+      },
+      {
+        "name": "material_original",
+        "type": "string"
+      },
+      {
+        "name": "ano_de_producao",
+        "type": "string"
+      },
+      {
+        "name": "pais_da_producao",
+        "type": "string"
+      },
+      {
+        "name": "cidade_da_producao",
+        "type": "string"
+      },
+      {
+        "name": "estado_da_producao",
+        "type": "string"
+      },
+      {
+        "name": "certificados",
+        "type": "string"
+      },
+      {
+        "name": "data_do_lancamento",
+        "type": "string"
+      },
+      {
+        "name": "local_do_lancamento",
+        "type": "string"
+      },
+      {
+        "name": "sala_do_lancamento",
+        "type": "string"
+      },
+      {
+        "name": "circuito_exibidor",
+        "type": "string"
+      },
+      {
+        "name": "sinopse",
+        "type": "string"
+      },
+      {
+        "name": "genero",
+        "type": "string"
+      },
+      {
+        "name": "termos_descritores",
+        "type": "string"
+      },
+      {
+        "name": "companhia_produtora",
+        "type": "string"
+      },
+      {
+        "name": "producao",
+        "type": "string"
+      },
+      {
+        "name": "companhia_distribuidora",
+        "type": "string"
+      },
+      {
+        "name": "argumento",
+        "type": "string"
+      },
+      {
+        "name": "roteiro",
+        "type": "string"
+      },
+      {
+        "name": "dialogos",
+        "type": "string"
+      },
+      {
+        "name": "estoria",
+        "type": "string"
+      },
+      {
+        "name": "direcao",
+        "type": "string"
+      },
+      {
+        "name": "direcao_de_fotografia",
+        "type": "string"
+      },
+      {
+        "name": "camera",
+        "type": "string"
+      },
+      {
+        "name": "direcao_de_som",
+        "type": "string"
+      },
+      {
+        "name": "cenografia",
+        "type": "string"
+      },
+      {
+        "name": "identidades_elenco",
+        "type": "string"
+      },
+      {
+        "name": "conteudo_examinado",
+        "type": "any"
+      },
+      {
+        "name": "fontes_utilizadas",
+        "type": "string"
+      },
+      {
+        "name": "fontes_consultadas",
+        "type": "string"
+      },
+      {
+        "name": "observacoes",
+        "type": "string"
+      },
+      {
+        "name": "cancoes",
+        "type": "string"
       }
-    }
-  ]
+    ]
+  }
 }
