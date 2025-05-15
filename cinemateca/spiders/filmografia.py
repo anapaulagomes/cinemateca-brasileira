@@ -68,10 +68,14 @@ class FilmografiaSpider(scrapy.Spider):
                 "created_at": str(datetime.now()),
                 "url": response.url,
                 "page": current_page,
-                "titulo": td.xpath('.//b[@class="title"]/text()').get(),
-                "codigo_do_filme": td.xpath(
-                    './/b[contains(text(),"Código do Filme")]/following::blockquote[1]/text()'
-                ).get(),
+                "titulo": self.clean_text(
+                    td.xpath('.//b[@class="title"]/text()').get()
+                ),
+                "codigo_do_filme": self.clean_text(
+                    td.xpath(
+                        './/b[contains(text(),"Código do Filme")]/following::blockquote[1]/text()'
+                    ).get()
+                ),
                 "categorias": self.get_text_next_to(td, "Categorias"),
                 "material_original": self.get_text_next_to(td, "Material original"),
                 "ano_de_producao": self.get_text_next_to(td, "Ano:"),
@@ -112,12 +116,8 @@ class FilmografiaSpider(scrapy.Spider):
                     td, "Identidades/elenco: ", return_all=True
                 ),
                 "conteudo_examinado": self.get_text_next_to(td, "Conteúdo examinado: "),
-                "fontes_utilizadas": td.xpath(
-                    './/b[contains(text(), "Fontes utilizadas:")]/following-sibling::a[count(preceding-sibling::b[contains(text(), "Fontes consultadas:")]) = 0]/text()'
-                ).getall(),
-                "fontes_consultadas": self.get_sources(
-                    td, "Fontes consultadas:", "Observações:"
-                ),
+                "fontes_utilizadas": self.get_used_sources(td),
+                "fontes_consultadas": self.get_checked_sources(td),
                 "observacoes": self.get_text_next_to(
                     td, "Observações: ", return_all=True
                 ),
@@ -148,9 +148,21 @@ class FilmografiaSpider(scrapy.Spider):
     def clean_text(text):
         if not text:
             return text
-        return text.strip("; ").strip()
+        if isinstance(text, str):
+            return text.strip("; ").strip()
 
-    def get_sources(self, td, left_label, right_label):
+        return "\n".join([item.strip("; ").strip() for item in text])
+
+    def get_used_sources(self, td):
+        return self.clean_text(
+            td.xpath(
+                './/b[contains(text(), "Fontes utilizadas:")]/following-sibling::a[count(preceding-sibling::b[contains(text(), "Fontes consultadas:")]) = 0]/text()'
+            ).getall()
+        )
+
+    def get_checked_sources(self, td):
+        left_label = "Fontes consultadas:"
+        right_label = "Observações:"
         text_only = td.xpath(
             f'.//b[contains(text(), "{left_label}")]/following-sibling::text()[count(preceding-sibling::b[contains(text(), "{right_label}")]) = 0]'
         ).getall()
