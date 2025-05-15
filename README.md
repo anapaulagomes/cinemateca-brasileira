@@ -15,5 +15,5 @@ junto com o [uv](https://docs.astral.sh/uv/). Então, execute: `uv sync` para in
 Ative o ambiente virtual com `source .venv/bin/activate` e execute o raspador com:
 
 ```bash
-scrapy crawl filmografia -o filmografia.json
+scrapy crawl filmografia -o filmografia.csv
 ```
